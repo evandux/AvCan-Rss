@@ -1,15 +1,13 @@
 import feedparser
 from twilio.rest import Client
 # Twilio user information
-account_sid = #"Twilio Account SID here"
-auth_token = #"Twilio auth token here"
+account_sid = # Twilio account SID
+auth_token = # Twilio Auth Token
 
 
 # Get the RSS feed from Avalanche Canada for desired forecast region
 news_feed = feedparser.parse('https://www.avalanche.ca/api/forecasts/kootenay-boundary.rss')
 entry = news_feed.entries[0]
-
-# print (entry.keys())
 
 # Get part of RSS feed that we want
 bulletin = entry.summary
@@ -58,26 +56,33 @@ new_bulletin = bulletin.replace('<h1>','')\
                        .replace('</tbodyead','')\
                        .replace('</table','')\
                        .replace(' ','')\
-                       .replace('<caption','')
+                       .replace('<caption','')\
+                       .replace('</','')\
+                       .replace('<','')\
 
 # Limit size of outgoing message (InReach allows only 160 char per messages)
-# Could break message up into 160 character chunks and send multiple messages
-outgoing = new_bulletin[385:545]
+# Could break message up into 160 character chunks and send multiple messages like so:
+outgoing1 = new_bulletin[0:159]
+outgoing2 = new_bulletin[160:319]
+outgoing3 = new_bulletin[320:479]
+outgoing4 = new_bulletin[480:639]
 
-# Print message
-print(outgoing)
+# List of outgoing messages
+out_messages = [outgoing1, outgoing2, outgoing3, outgoing4]
 
-# Check length of outgoing
-print(len(outgoing))
-print(len(new_bulletin))
 
-# Send message to phone using Twilio
-client = Client(account_sid, auth_token)
-message = client.messages.create(
-                            body = #[this is the message you want to send],
-                            from_ = #[from phone number here],
-                            to= # [message recipient phone number]
-                        )
-print(message.sid)
-print("Message sent to " + message.to)
+# Check length of outgoing messages
+print(len(outgoing1 + " " + outgoing2 + " " + outgoing3 + " " + outgoing4))
+
+# For loop to send all messages in out_messages list
+for m in out_messages:
+    # Send message to phone using Twilio
+    client = Client(account_sid, auth_token)
+    message = client.messages.create(
+                                body = m,
+                                from_ = # from phone number here,
+                                to= # recipient phone number here
+                            )
+    print(message.sid)
+    print("Message sent to " + message.to)
 print("Complete")
